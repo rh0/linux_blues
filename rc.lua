@@ -46,8 +46,8 @@ end
 beautiful.init(awful.util.getdir("config") .. "/themes/linux_blues/theme.lua")
 
 -- This is used later as the default terminal and editor to run.
-terminal = "xterm"
-editor = os.getenv("EDITOR") or "nano"
+terminal = "urxvt"
+editor = os.getenv("EDITOR") or "gvim"
 editor_cmd = terminal .. " -e " .. editor
 
 -- Default modkey.
@@ -113,7 +113,13 @@ tags = {}
 for s = 1, screen.count() do
     -- Each screen has its own tag table.
     --tags[s] = awful.tag({ 1, 2, 3, 4, 5, 6, 7, 8, 9 }, s, layouts[1])
-    tags[s] = awful.tag( { "⚀", "⚁", "⚂", "⚃", "⚄", "⚅" }, s, layouts[2]) -- removed icons: "⚈", "⚉", "▪" 
+    if s<2 then
+        tags[s] = awful.tag( { "☷", "☳", "☵", "☱", "☶", "☲" }, s, layouts[2]) -- removed icons: "⚈", "⚉", "▪"
+    elseif s == 2 then
+        tags[s] = awful.tag( { "☴", "☰" }, s, layouts[2])
+    else
+        tags[s] = awful.tag( { "☯" }, s, layouts[2])
+    end
 end
 -- }}}
 
@@ -273,7 +279,7 @@ bat_bar_widget:set_width(60)
 bat_bar_widget:set_height(10)
 bat_bar_widget:set_max_value(1)
 bat_bar_widget:set_background_color(beautiful.bg_normal)
-vicious.register(bat_bar_widget, vicious.widgets.bat, 
+vicious.register(bat_bar_widget, vicious.widgets.bat,
     function (widget, args)
         if args[1] ~= "+" then
             widget:set_border_color(beautiful.fg_normal)
@@ -319,7 +325,7 @@ vol_bar_widget:set_width(60)
 vol_bar_widget:set_height(10)
 vol_bar_widget:set_background_color(beautiful.bg_normal)
 vol_bar_widget:set_color(beautiful.fg_focus)
-vicious.register(vol_bar_widget, vicious.widgets.volume, 
+vicious.register(vol_bar_widget, vicious.widgets.volume,
     function (widget, args)
         if args[2] == "♫" then
             widget:set_border_color(beautiful.fg_normal)
@@ -341,7 +347,7 @@ vol_tooltip:add_to_object(vol_bar_widget)
 vicious.cache(vicious.widgets.net)
 
 upload_text_widget = wibox.widget.textbox()
-upload_text_widget:set_text("UP")
+upload_text_widget:set_text("▲")
 upload_text_layout = wibox.layout.margin(upload_text_widget, left_margin, right_margin, top_margin, bottom_margin)
 
 upload_graph_widget = awful.widget.graph()
@@ -349,15 +355,15 @@ upload_graph_widget:set_width(60)
 upload_graph_widget:set_height(10)
 upload_graph_widget:set_background_color(beautiful.bg_normal)
 upload_graph_widget:set_color(beautiful.fg_focus)
-vicious.register(upload_graph_widget, vicious.widgets.net, 
+vicious.register(upload_graph_widget, vicious.widgets.net,
     function (widget, args)
-            return args["{wlan0 up_kb}"]
+            return args["{wlp2s0 up_kb}"]
     end,
 3)
 upload_graph_layout = wibox.layout.margin(upload_graph_widget, left_margin, right_margin, top_margin, bottom_margin)
 
 download_text_widget = wibox.widget.textbox()
-download_text_widget:set_text("DOWN")
+download_text_widget:set_text("▼")
 download_text_layout = wibox.layout.margin(download_text_widget, left_margin, right_margin, top_margin, bottom_margin)
 
 download_graph_widget = awful.widget.graph()
@@ -365,15 +371,15 @@ download_graph_widget:set_width(60)
 download_graph_widget:set_height(10)
 download_graph_widget:set_background_color(beautiful.bg_normal)
 download_graph_widget:set_color(beautiful.fg_focus)
-vicious.register(download_graph_widget, vicious.widgets.net, 
+vicious.register(download_graph_widget, vicious.widgets.net,
     function (widget, args)
-            return args["{wlan0 down_kb}"]
+            return args["{wlp2s0 down_kb}"]
     end,
 3)
 download_graph_layout = wibox.layout.margin(download_graph_widget, left_margin, right_margin, top_margin, bottom_margin)
 
 network_text_widget = wibox.widget.textbox()
-network_text_widget:set_text("WIFI")
+-- network_text_widget:set_text("WIFI")
 network_text_layout = wibox.layout.margin(network_text_widget, left_margin, right_margin, top_margin, bottom_margin)
 
 wifi_tooltip = awful.tooltip({ })
@@ -402,7 +408,7 @@ vicious.register(wifi_bar_widget, vicious.widgets.wifi,
             return args["{link}"]
         end
     end,
-7, "wlan0")
+7, "wlp2s0")
 essid_text_layout = wibox.layout.margin(essid_text_widget, left_margin, right_margin, top_margin, bottom_margin)
 wifi_bar_layout = wibox.layout.margin(wifi_bar_widget, left_margin, right_margin, top_margin, bottom_margin)
 wifi_tooltip:add_to_object(wifi_bar_widget)
@@ -483,7 +489,7 @@ for s = 1, screen.count() do
     bottom_layout:set_left(bottom_left_layout)
     bottom_layout:set_middle(mypromptbox[s])
     bottom_layout:set_right(bottom_right_layout)
-    
+
     bottom_wibox[s]:set_widget(bottom_layout)
 end
 -- }}}
@@ -547,8 +553,8 @@ globalkeys = awful.util.table.join(
     -- Prompt
     awful.key({ modkey },            "r",     function () mypromptbox[mouse.screen]:run() end),
     awful.key({ modkey },            "d",
-        function () 
-            awful.util.spawn( "dmenu_run -i -p 'Run command: '" .. 
+        function ()
+            awful.util.spawn( "dmenu_run -i -p 'Run command: '" ..
             " -nb '" .. beautiful.bg_normal .. "'" ..
             " -nf '" .. beautiful.fg_normal .. "'" ..
             " -sb '" .. beautiful.bg_focus .. "'" ..
@@ -564,7 +570,7 @@ globalkeys = awful.util.table.join(
               end),
 
     -- Multimedia
-    awful.key({},                    "XF86AudioMute", 
+    awful.key({},                    "XF86AudioMute",
         function ()
             awful.util.spawn("amixer -q sset Master toggle")
             vicious.force({ vol_bar_widget })
@@ -637,7 +643,7 @@ clientkeys = awful.util.table.join(
     awful.key({ modkey, "Shift"   }, "]", function (c) c.opacity = 1.00 end),
     awful.key({ modkey, "Shift"   }, "[", function (c) c.opacity = 0.05 end),
 
-    awful.key({ modkey, "Shift"   }, "m", 
+    awful.key({ modkey, "Shift"   }, "m",
         function ()
             if mouse.coords().x < screen[1].geometry.width-1 or mouse.coords().y < screen[1].geometry.height-1 then
                 mouse.coords({ x=screen[1].geometry.width, y=screen[1].geometry.height })
